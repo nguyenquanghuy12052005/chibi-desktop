@@ -23,13 +23,5 @@ export default function SpeechBubble({ state, send }) {
     return () => clearInterval(interval);
   }, [send]);
 
-  // return (
-  //   <>
-  //     {msg && (
-  //       <div className="speech-bubble">
-  //         <p>{msg}</p>
-  //       </div>
-  //     )}
-  //   </>
-  // );
+
 }

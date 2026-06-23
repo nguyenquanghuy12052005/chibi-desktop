@@ -25,8 +25,8 @@ function createWindow() {
   win.loadURL('http://localhost:5173')
   // win.webContents.openDevTools({ mode: 'detach' })
 
-  const display = screen.getPrimaryDisplay()
-  const { width, height } = display.workAreaSize
+  const display = screen.getPrimaryDisplay() 
+  const { width, height } = display.workAreaSize // Lấy kích thước vùng làm việc (không bao gồm taskbar)
   win.setPosition(width - 170, height - 170)
 
   // ── Click-through: poll chuột từ main process ──
