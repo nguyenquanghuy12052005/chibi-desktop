@@ -4,6 +4,9 @@ import SpeechBubble from '../SpeechBubble/SpeechBubble';
 import { loadSkin } from '../../../utils/sprite-extractor';
 import skinConfig from '../../assets/skins/skin.json';
 
+
+const DISPLAY_SIZE = 150;
+
 // Map trạng thái máy → tên animation trong skin.json
 const STATE_TO_ANIM = {
   IDLE:     'idle',
@@ -13,18 +16,126 @@ const STATE_TO_ANIM = {
   FAILED:   'hurt',
 };
 
+/**
+ * Xóa pixel outline bao quanh nhân vật:
+ * Các pixel tối (gần đen) tiếp xúc với vùng trong suốt sẽ bị xóa.
+ */
+// function removeOutline(srcCanvas) {
+//   const w = srcCanvas.width;
+//   const h = srcCanvas.height;
+
+//   const out = document.createElement('canvas');
+//   out.width = w;
+//   out.height = h;
+//   const ctx = out.getContext('2d');
+//   ctx.drawImage(srcCanvas, 0, 0);
+
+//   const imageData = ctx.getImageData(0, 0, w, h);
+//   const data = imageData.data;
+
+//   // Helper: lấy alpha của pixel (i, j)
+//   const alpha = (x, y) => {
+//     if (x < 0 || x >= w || y < 0 || y >= h) return 0;
+//     return data[(y * w + x) * 4 + 3];
+//   };
+
+//   // Helper: kiểm tra pixel có "tối" không (dark outline pixel)
+//   const isDark = (x, y) => {
+//     const idx = (y * w + x) * 4;
+//     const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
+//     if (a < 10) return false; // đã trong suốt
+//     const brightness = (r + g + b) / 3;
+//     return brightness < 80; // pixel tối
+//   };
+
+//   // Helper: pixel có tiếp giáp với vùng trong suốt không
+//   const touchesTransparent = (x, y) => {
+//     return (
+//       alpha(x - 1, y) < 10 ||
+//       alpha(x + 1, y) < 10 ||
+//       alpha(x, y - 1) < 10 ||
+//       alpha(x, y + 1) < 10
+//     );
+//   };
+
+//   // Xóa pixel outline: tối + tiếp xúc transparent → trong suốt
+//   for (let y = 0; y < h; y++) {
+//     for (let x = 0; x < w; x++) {
+//       if (isDark(x, y) && touchesTransparent(x, y)) {
+//         const idx = (y * w + x) * 4;
+//         data[idx + 3] = 0; // set alpha = 0
+//       }
+//     }
+//   }
+
+//   ctx.putImageData(imageData, 0, 0);
+//   return out;
+// }
+
+function removeOutline(srcCanvas, passes = 2) {
+  const w = srcCanvas.width;
+  const h = srcCanvas.height;
+
+  const out = document.createElement('canvas');
+  out.width = w;
+  out.height = h;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(srcCanvas, 0, 0);
+
+  for (let pass = 0; pass < passes; pass++) {
+    const imageData = ctx.getImageData(0, 0, w, h);
+    const data = imageData.data;
+
+    const alpha = (x, y) => {
+      if (x < 0 || x >= w || y < 0 || y >= h) return 0;
+      return data[(y * w + x) * 4 + 3];
+    };
+
+    const isDark = (x, y) => {
+      const idx = (y * w + x) * 4;
+      const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
+      if (a < 10) return false;
+      return (r + g + b) / 3 < 80;
+    };
+
+    const touchesTransparent = (x, y) => (
+      alpha(x - 1, y) < 10 || alpha(x + 1, y) < 10 ||
+      alpha(x, y - 1) < 10 || alpha(x, y + 1) < 10
+    );
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (isDark(x, y) && touchesTransparent(x, y)) {
+          data[(y * w + x) * 4 + 3] = 0;
+        }
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  return out;
+}
+
 export default function Chibi({ state, send, onMouseEnter, onMouseLeave }) {
   const canvasRef = useRef(null);
   const [framesMap, setFramesMap] = useState(null);
   const [currentFrame, setCurrentFrame] = useState(0);
   const frameTimer = useRef(null);
 
-  // 1. Load tất cả sprite sheets
+  // 1. Load tất cả sprite / ảnh tĩnh
   useEffect(() => {
     async function load() {
       try {
         const anims = await loadSkin(skinConfig);
-        setFramesMap(anims);
+
+        // Xử lý xóa outline cho từng frame
+        const processed = {};
+        for (const [animName, frames] of Object.entries(anims)) {
+          processed[animName] = frames.map(removeOutline);
+        }
+
+        setFramesMap(processed);
       } catch (err) {
         console.error('Lỗi load skin:', err);
       }
@@ -42,11 +153,10 @@ export default function Chibi({ state, send, onMouseEnter, onMouseLeave }) {
 
     setCurrentFrame(0);
 
-    // Xóa timer cũ
     if (frameTimer.current) clearInterval(frameTimer.current);
 
     const speed = skinConfig.animations[animName]?.speed ?? 150;
-    if (speed > 0) {
+    if (speed > 0 && frames.length > 1) {
       frameTimer.current = setInterval(() => {
         setCurrentFrame(prev => (prev + 1) % frames.length);
       }, speed);
@@ -55,7 +165,7 @@ export default function Chibi({ state, send, onMouseEnter, onMouseLeave }) {
     return () => clearInterval(frameTimer.current);
   }, [state, framesMap]);
 
-  // 3. Vẽ frame hiện tại lên canvas
+  // 3. Vẽ frame hiện tại lên canvas, scale vừa DISPLAY_SIZE
   useEffect(() => {
     if (!canvasRef.current || !framesMap) return;
 
@@ -68,20 +178,27 @@ export default function Chibi({ state, send, onMouseEnter, onMouseLeave }) {
     const frameCanvas = frames[currentFrame];
     if (!frameCanvas) return;
 
-    const scale = 4; // Scale lên 4x cho pixel art rõ nét
-    const w = skinConfig.cellW * scale;
-    const h = skinConfig.cellH * scale;
+    const srcW = frameCanvas.width;
+    const srcH = frameCanvas.height;
 
-    canvas.width = w;
-    canvas.height = h;
-    ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, w, h);
-    ctx.drawImage(frameCanvas, 0, 0, w, h);
+    // Scale giữ tỷ lệ, vừa với DISPLAY_SIZE
+    const scale = Math.min(DISPLAY_SIZE / srcW, DISPLAY_SIZE / srcH);
+    const drawW = Math.round(srcW * scale);
+    const drawH = Math.round(srcH * scale);
+
+    // Canvas nội tại = kích thước thực cần vẽ (không phải CSS size)
+    canvas.width = DISPLAY_SIZE;
+    canvas.height = DISPLAY_SIZE;
+
+    // Căn giữa trong canvas 150x150
+    const offsetX = Math.round((DISPLAY_SIZE - drawW) / 2);
+    const offsetY = Math.round((DISPLAY_SIZE - drawH) / 2);
+
+    ctx.clearRect(0, 0, DISPLAY_SIZE, DISPLAY_SIZE);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(frameCanvas, offsetX, offsetY, drawW, drawH);
   }, [framesMap, currentFrame, state]);
-
-  const scale = 4;
-  const displayW = skinConfig.cellW * scale;
-  const displayH = skinConfig.cellH * scale;
 
   return (
     <div
@@ -89,8 +206,8 @@ export default function Chibi({ state, send, onMouseEnter, onMouseLeave }) {
       onMouseLeave={onMouseLeave}
       style={{
         position: 'relative',
-        width: displayW,
-        height: displayH,
+        width: DISPLAY_SIZE,
+        height: DISPLAY_SIZE,
         cursor: 'pointer',
         WebkitAppRegion: 'drag',
       }}
@@ -98,9 +215,8 @@ export default function Chibi({ state, send, onMouseEnter, onMouseLeave }) {
       <canvas
         ref={canvasRef}
         style={{
-          width: displayW,
-          height: displayH,
-          imageRendering: 'pixelated',
+          width: DISPLAY_SIZE,
+          height: DISPLAY_SIZE,
           display: 'block',
         }}
       />

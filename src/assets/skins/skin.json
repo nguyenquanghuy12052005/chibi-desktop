@@ -1,44 +1,43 @@
 {
-  "name": "Pink Monster",
-  "cellW": 32,
-  "cellH": 32,
+  "name": "Chibi",
+  "cellW": null,
+  "cellH": null,
   "defaultAnim": "idle",
+  "staticImages": true,
   "animations": {
     "idle": {
-      "folder": "1_Pink_Monster",
-      "file": "Pink_Monster_Idle_4.png",
-      "frameCount": 4,
-      "speed": 150
+      "folder": "chibi",
+      "frames": [
+        "chibi_clean.png",
+        "chibi_idle_02_wink.png",
+        "chibi_idle_03_smile.png",
+        "chibi_idle_04_excited.png"
+      ],
+      "speed": 600
     },
     "run": {
-      "folder": "1_Pink_Monster",
-      "file": "Pink_Monster_Run_6.png",
-      "frameCount": 6,
-      "speed": 100
+      "folder": "chibi",
+      "frames": [
+        "chibi_idle_04_excited.png",
+        "chibi_clean.png"
+      ],
+      "speed": 300
     },
     "attack": {
-      "folder": "1_Pink_Monster",
-      "file": "Pink_Monster_Attack1_4.png",
-      "frameCount": 4,
-      "speed": 120
+      "folder": "chibi",
+      "frames": [
+        "chibi_idle_04_excited.png",
+        "chibi_idle_02_wink.png"
+      ],
+      "speed": 250
     },
     "hurt": {
-      "folder": "1_Pink_Monster",
-      "file": "Pink_Monster_Hurt_4.png",
-      "frameCount": 4,
-      "speed": 150
-    },
-    "jump": {
-      "folder": "1_Pink_Monster",
-      "file": "Pink_Monster_Jump_8.png",
-      "frameCount": 8,
-      "speed": 100
-    },
-    "death": {
-      "folder": "1_Pink_Monster",
-      "file": "Pink_Monster_Death_8.png",
-      "frameCount": 8,
-      "speed": 150
+      "folder": "chibi",
+      "frames": [
+        "chibi_idle_02_wink.png",
+        "chibi_idle_03_smile.png"
+      ],
+      "speed": 400
     }
   }
 }
