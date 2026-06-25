@@ -3,15 +3,15 @@
   "defaultAnim": "idle",
   "staticImages": true,
   "animations": {
-    "idle": { "folder": "chibi", "frames": ["1.png","2.png"], "speed": 220 },
-    "run": { "folder": "chibi", "frames": ["3.png"], "speed": 0 },
-    "drag_confused": { "folder": "chibi", "frames": ["4.png"], "speed": 0 },
+    "idle": { "folder": "chibi", "frames": ["shime1.png","shime1a.png"], "speed": 520 },
+    "run": { "folder": "chibi", "frames": ["shime2.png", "shime3.png"], "speed": 520 },
+    "drag_confused": { "folder": "chibi", "frames": ["shime23.png", "shime23a.png", "shime23b.png"], "speed": 400 },
 
-    "alert": { "folder": "chibi", "frames": ["5.png"], "speed": 0 },
-    "thinking": { "folder": "chibi", "frames": ["6.png"], "speed": 0 },
-    "success": { "folder": "chibi", "frames": ["7.png"], "speed": 0 },
-    "failed": { "folder": "chibi", "frames": ["8.png"], "speed": 0 },
+    "alert": { "folder": "chibi", "frames": ["shime22.png"], "speed": 0 },
+    "thinking": { "folder": "chibi", "frames": ["shime26.png", "shime27.png", "shime28.png", "shime29.png"], "speed": 200 },
+    "success": { "folder": "chibi", "frames": ["shime11a.png", "shime11b.png", "shime11c.png"], "speed": 200 },
+    "failed": { "folder": "chibi", "frames": ["shime5.png", "shime6.png"], "speed": 200 },
 
-    "rest": { "folder": "chibi", "frames": ["1.png","2.png","3.png","4.png"], "speed": 260 }
+    "rest": { "folder": "chibi", "frames": ["shime20.png", "shime20a.png", "shime20b.png", "shime21.png","shime21a.png"], "speed": 2060 }
   }
 }
