@@ -6,6 +6,8 @@ let tray
 let doNotDisturb = false // trạng thái Do Not Disturb
 
 
+
+//tạo cửa sổ chính
 function createWindow() {
   win = new BrowserWindow({
     width: 150,
@@ -23,7 +25,7 @@ function createWindow() {
   })
 
   win.loadURL('http://localhost:5173')
-  // win.webContents.openDevTools({ mode: 'detach' })
+  win.webContents.openDevTools({ mode: 'detach' })
 
   const display = screen.getPrimaryDisplay() 
   const { width, height } = display.workAreaSize // Lấy kích thước vùng làm việc (không bao gồm taskbar)
@@ -49,8 +51,12 @@ function createWindow() {
   }, 50) // check mỗi 50ms
 }
 
+
+
 //Tạo biểu tượng khay hệ thống
 function createTray() {
+
+  
   const icon = nativeImage.createFromPath(path.join(__dirname, '../public/na.jpg'))
   tray = new Tray(icon)
 
@@ -66,12 +72,27 @@ function createTray() {
         // Phase 2 dùng để skip cron quiz khi DND = true
       }
     },
+{ label: '→ IDLE', click: () => sendChibiState('IDLE') },
+{ label: '→ RUN', click: () => sendChibiState('RUN') },
+{ label: '→ DRAG_CONFUSED', click: () => sendChibiState('DRAG_CONFUSED') },
+{ label: '→ ALERT', click: () => sendChibiState('ALERT') },
+{ label: '→ THINKING', click: () => sendChibiState('THINKING') },
+{ label: '→ SUCCESS', click: () => sendChibiState('SUCCESS') },
+{ label: '→ FAILED', click: () => sendChibiState('FAILED') },
+{ label: '→ REST', click: () => sendChibiState('REST') },
     { type: 'separator' },
     { label: 'Thoát',      click: () => app.quit() }
   ])
 
   tray.setToolTip('Chibi Assistant')
   tray.setContextMenu(menu)
+
+
+  function sendChibiState(stateName) {
+  if (!win) return
+  win.webContents.send('CHIBI_STATE', { state: stateName })
+  console.log('[main] gửi CHIBI_STATE:', stateName)
+}
 }
 
 // IPC: renderer gửi lên để test (optional)

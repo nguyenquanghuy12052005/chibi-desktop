@@ -1,43 +1,17 @@
 {
   "name": "Chibi",
-  "cellW": null,
-  "cellH": null,
   "defaultAnim": "idle",
   "staticImages": true,
   "animations": {
-    "idle": {
-      "folder": "chibi",
-      "frames": [
-        "chibi_clean.png",
-        "chibi_idle_02_wink.png",
-        "chibi_idle_03_smile.png",
-        "chibi_idle_04_excited.png"
-      ],
-      "speed": 600
-    },
-    "run": {
-      "folder": "chibi",
-      "frames": [
-        "chibi_idle_04_excited.png",
-        "chibi_clean.png"
-      ],
-      "speed": 300
-    },
-    "attack": {
-      "folder": "chibi",
-      "frames": [
-        "chibi_idle_04_excited.png",
-        "chibi_idle_02_wink.png"
-      ],
-      "speed": 250
-    },
-    "hurt": {
-      "folder": "chibi",
-      "frames": [
-        "chibi_idle_02_wink.png",
-        "chibi_idle_03_smile.png"
-      ],
-      "speed": 400
-    }
+    "idle": { "folder": "chibi", "frames": ["1.png","2.png"], "speed": 220 },
+    "run": { "folder": "chibi", "frames": ["3.png"], "speed": 0 },
+    "drag_confused": { "folder": "chibi", "frames": ["4.png"], "speed": 0 },
+
+    "alert": { "folder": "chibi", "frames": ["5.png"], "speed": 0 },
+    "thinking": { "folder": "chibi", "frames": ["6.png"], "speed": 0 },
+    "success": { "folder": "chibi", "frames": ["7.png"], "speed": 0 },
+    "failed": { "folder": "chibi", "frames": ["8.png"], "speed": 0 },
+
+    "rest": { "folder": "chibi", "frames": ["1.png","2.png","3.png","4.png"], "speed": 260 }
   }
 }

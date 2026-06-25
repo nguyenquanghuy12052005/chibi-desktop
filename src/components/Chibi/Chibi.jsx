@@ -3,74 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 import SpeechBubble from '../SpeechBubble/SpeechBubble';
 import { loadSkin } from '../../../utils/sprite-extractor';
 import skinConfig from '../../assets/skins/skin.json';
-
+import { CHIBI_ANIM_BY_STATE } from '../../config/chibiAnim'
 
 const DISPLAY_SIZE = 150;
 
-// Map trạng thái máy → tên animation trong skin.json
-const STATE_TO_ANIM = {
-  IDLE:     'idle',
-  ALERT:    'attack',
-  THINKING: 'idle',
-  SUCCESS:  'run',
-  FAILED:   'hurt',
-};
 
-/**
- * Xóa pixel outline bao quanh nhân vật:
- * Các pixel tối (gần đen) tiếp xúc với vùng trong suốt sẽ bị xóa.
- */
-// function removeOutline(srcCanvas) {
-//   const w = srcCanvas.width;
-//   const h = srcCanvas.height;
 
-//   const out = document.createElement('canvas');
-//   out.width = w;
-//   out.height = h;
-//   const ctx = out.getContext('2d');
-//   ctx.drawImage(srcCanvas, 0, 0);
-
-//   const imageData = ctx.getImageData(0, 0, w, h);
-//   const data = imageData.data;
-
-//   // Helper: lấy alpha của pixel (i, j)
-//   const alpha = (x, y) => {
-//     if (x < 0 || x >= w || y < 0 || y >= h) return 0;
-//     return data[(y * w + x) * 4 + 3];
-//   };
-
-//   // Helper: kiểm tra pixel có "tối" không (dark outline pixel)
-//   const isDark = (x, y) => {
-//     const idx = (y * w + x) * 4;
-//     const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
-//     if (a < 10) return false; // đã trong suốt
-//     const brightness = (r + g + b) / 3;
-//     return brightness < 80; // pixel tối
-//   };
-
-//   // Helper: pixel có tiếp giáp với vùng trong suốt không
-//   const touchesTransparent = (x, y) => {
-//     return (
-//       alpha(x - 1, y) < 10 ||
-//       alpha(x + 1, y) < 10 ||
-//       alpha(x, y - 1) < 10 ||
-//       alpha(x, y + 1) < 10
-//     );
-//   };
-
-//   // Xóa pixel outline: tối + tiếp xúc transparent → trong suốt
-//   for (let y = 0; y < h; y++) {
-//     for (let x = 0; x < w; x++) {
-//       if (isDark(x, y) && touchesTransparent(x, y)) {
-//         const idx = (y * w + x) * 4;
-//         data[idx + 3] = 0; // set alpha = 0
-//       }
-//     }
-//   }
-
-//   ctx.putImageData(imageData, 0, 0);
-//   return out;
-// }
 
 function removeOutline(srcCanvas, passes = 2) {
   const w = srcCanvas.width;
@@ -147,7 +85,7 @@ export default function Chibi({ state, send, onMouseEnter, onMouseLeave }) {
   useEffect(() => {
     if (!framesMap) return;
 
-    const animName = STATE_TO_ANIM[state] || 'idle';
+    const animName = CHIBI_ANIM_BY_STATE[state] ?? 'idle';
     const frames = framesMap[animName];
     if (!frames || frames.length === 0) return;
 
@@ -171,7 +109,7 @@ export default function Chibi({ state, send, onMouseEnter, onMouseLeave }) {
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const animName = STATE_TO_ANIM[state] || 'idle';
+    const animName = CHIBI_ANIM_BY_STATE[state] ?? 'idle';
     const frames = framesMap[animName];
     if (!frames || frames.length === 0) return;
 
@@ -220,7 +158,7 @@ export default function Chibi({ state, send, onMouseEnter, onMouseLeave }) {
           display: 'block',
         }}
       />
-      <SpeechBubble state={state} send={send} />
+      {/* <SpeechBubble state={state} send={send} /> */}
     </div>
   );
 }
