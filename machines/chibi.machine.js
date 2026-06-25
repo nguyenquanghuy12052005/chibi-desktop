@@ -7,6 +7,7 @@ export const chibiMachine = createMachine({
     IDLE: {
       //idle gọi all
       on: {
+        IDLE: 'IDLE',
         RUN: 'RUN',
         DRAG_CONFUSED: 'DRAG_CONFUSED',
         ALERT: 'ALERT',
@@ -17,8 +18,8 @@ export const chibiMachine = createMachine({
       },
     },
       
-    RUN: { on: { IDLE: 'IDLE', REST: 'REST', ALERT: 'ALERT' } }, //chạy gọi nghỉ, hỏi
-    DRAG_CONFUSED: { on: { IDLE: 'IDLE', REST: 'REST' } },
+    RUN: { on: { IDLE: 'IDLE', RUN: 'RUN', REST: 'REST', ALERT: 'ALERT', DRAG_CONFUSED: 'DRAG_CONFUSED' } }, //chạy gọi nghỉ, hỏi
+    DRAG_CONFUSED: { on: { IDLE: 'IDLE', RUN: 'RUN', REST: 'REST', ALERT: 'ALERT', DRAG_CONFUSED: 'DRAG_CONFUSED' } },
 
     ALERT: { on: { THINKING: 'THINKING', IDLE: 'IDLE' } },
     THINKING: { on: { SUCCESS: 'SUCCESS', FAILED: 'FAILED', IDLE: 'IDLE' } },
@@ -26,6 +27,6 @@ export const chibiMachine = createMachine({
     SUCCESS: { after: { 2000: 'IDLE' }, on: { IDLE: 'IDLE' } },
     FAILED: { after: { 2000: 'IDLE' }, on: { IDLE: 'IDLE' } },
 
-    REST: { on: { IDLE: 'IDLE', ALERT: 'ALERT', RUN: 'RUN' } },
+    REST: { on: { IDLE: 'IDLE', RUN: 'RUN', REST: 'REST', ALERT: 'ALERT', DRAG_CONFUSED: 'DRAG_CONFUSED' } },
   },
 })

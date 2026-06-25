@@ -6,6 +6,21 @@ let tray
 let doNotDisturb = false // trạng thái Do Not Disturb
 
 
+// Lưu trữ vị trí và trạng thái kéo thả
+let lastBounds = null;
+let isDragging = false;
+let dragStopTimer = null;
+
+// IPC: renderer gửi lên để test (optional)
+let dragging = false
+let dragOffsetX = 0
+let dragOffsetY = 0
+
+  function sendChibiState(stateName) {
+  if (!win) return
+  win.webContents.send('CHIBI_STATE', { state: stateName })
+  console.log('[main] gửi CHIBI_STATE:', stateName)
+}
 
 //tạo cửa sổ chính
 function createWindow() {
@@ -88,23 +103,69 @@ function createTray() {
   tray.setContextMenu(menu)
 
 
-  function sendChibiState(stateName) {
-  if (!win) return
-  win.webContents.send('CHIBI_STATE', { state: stateName })
-  console.log('[main] gửi CHIBI_STATE:', stateName)
+
 }
+
+
+function startDragWatcher() {
+  lastBounds = win.getBounds();
+  setInterval(() => {
+    if (!win) return;
+    const b = win.getBounds();
+    const moved = !lastBounds || b.x !== lastBounds.x || b.y !== lastBounds.y;
+    if (moved) {
+      if (!isDragging) {
+        isDragging = true;
+        sendChibiState('DRAG_CONFUSED');
+      }
+      if (dragStopTimer) clearTimeout(dragStopTimer);
+      dragStopTimer = setTimeout(() => {
+        isDragging = false;
+        sendChibiState('IDLE'); // hoặc không gửi, để auto loop tự xử lý
+      }, 300);
+    }
+    lastBounds = b;
+  }, 100);
 }
+
 
 // IPC: renderer gửi lên để test (optional)
 ipcMain.on('CHIBI_STATE_FROM_RENDERER', (_, payload) => {
   console.log('renderer gửi:', payload)
 })
 
-// IPC: main process → renderer (cron sẽ dùng sau)
-// Dùng: win.webContents.send('CHIBI_STATE', { state: 'ALERT' })
+
+ipcMain.on('DRAG_START', (_, payload) => {
+  if (!win || !payload) return
+  const { mouseX, mouseY, winX, winY } = payload
+
+  dragging = true
+  dragOffsetX = mouseX - winX
+  dragOffsetY = mouseY - winY
+
+  sendChibiState('DRAG_CONFUSED')
+})
+
+ipcMain.on('DRAG_MOVE', (_, payload) => {
+  if (!win || !dragging || !payload) return
+  const { mouseX, mouseY } = payload
+
+  const nextX = Math.round(mouseX - dragOffsetX)
+  const nextY = Math.round(mouseY - dragOffsetY)
+  win.setPosition(nextX, nextY)
+})
+
+ipcMain.on('DRAG_END', () => {
+  if (!dragging) return
+  dragging = false
+  sendChibiState('IDLE') // hoặc bỏ dòng này nếu muốn auto-loop xử lý
+})
+
+
 
 
 app.whenReady().then(() => {
   createWindow()
+  startDragWatcher()
   createTray()
 })

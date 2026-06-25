@@ -7,7 +7,12 @@ export default function App() {
 
   const [state, send] = useMachine(chibiMachine)
   const currentState = state.value  // 'IDLE' | 'ALERT' | 'THINKING' | 'SUCCESS' | 'FAILED'
+  const NEUTRAL_STATES = ['IDLE', 'RUN', 'REST'];
 
+  function pickRandomNeutral() {
+    const i = Math.floor(Math.random() * NEUTRAL_STATES.length);
+    return NEUTRAL_STATES[i];
+  }
 
   // Nhận state từ Electron main → đẩy vào XState
   useEffect(() => {
@@ -21,14 +26,15 @@ export default function App() {
     return () => api.removeChibiStateListener?.()
   }, [send])
 
-  // const handleMouseEnter = () => {
-  //   window.electronAPI?.mouseEnter()  // bật tương tác chuột
-  // }
 
-  // const handleMouseLeave = () => {
-  //   window.electronAPI?.mouseLeave()  // tắt → click-through
-  // }
-
+useEffect(() => {
+  const id = setInterval(() => {
+    const current = state.value;
+    if (!NEUTRAL_STATES.includes(current)) return;
+    send({ type: pickRandomNeutral() });
+  }, 5000);
+  return () => clearInterval(id);
+}, [state.value, send]);
 
   return (
     <div style={{ width: '100vw', height: '100vh', background: 'transparent' }}>

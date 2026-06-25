@@ -60,6 +60,44 @@ export default function Chibi({ state, send, onMouseEnter, onMouseLeave }) {
   const [framesMap, setFramesMap] = useState(null);
   const [currentFrame, setCurrentFrame] = useState(0);
   const frameTimer = useRef(null);
+  const isPointerDragging = useRef(false)
+
+
+  const onPointerDown = (e) => {
+  isPointerDragging.current = true
+  e.currentTarget.setPointerCapture?.(e.pointerId)
+
+  const rect = e.currentTarget.getBoundingClientRect()
+  const winX = Math.round(window.screenX)
+  const winY = Math.round(window.screenY)
+
+  window.electronAPI?.startDrag({
+    mouseX: e.screenX,
+    mouseY: e.screenY,
+    winX,
+    winY,
+  })
+}
+
+const onPointerMove = (e) => {
+  if (!isPointerDragging.current) return
+  window.electronAPI?.moveDrag({
+    mouseX: e.screenX,
+    mouseY: e.screenY,
+  })
+}
+
+const endPointerDrag = (e) => {
+  if (!isPointerDragging.current) return
+  isPointerDragging.current = false
+  e.currentTarget.releasePointerCapture?.(e.pointerId)
+  window.electronAPI?.endDrag()
+}
+
+
+
+
+
 
   // 1. Load tất cả sprite / ảnh tĩnh
   useEffect(() => {
@@ -139,17 +177,19 @@ export default function Chibi({ state, send, onMouseEnter, onMouseLeave }) {
   }, [framesMap, currentFrame, state]);
 
   return (
-    <div
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      style={{
-        position: 'relative',
-        width: DISPLAY_SIZE,
-        height: DISPLAY_SIZE,
-        cursor: 'pointer',
-        WebkitAppRegion: 'drag',
-      }}
-    >
+  <div
+  onPointerDown={onPointerDown}
+  onPointerMove={onPointerMove}
+  onPointerUp={endPointerDrag}
+  onPointerCancel={endPointerDrag}
+  style={{
+    position: 'relative',
+    width: DISPLAY_SIZE,
+    height: DISPLAY_SIZE,
+    cursor: 'pointer',
+    WebkitAppRegion: 'no-drag',
+  }}
+>
       <canvas
         ref={canvasRef}
         style={{
